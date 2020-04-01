@@ -1,8 +1,3 @@
-val Http4sVersion = "0.21.2"
-val TapirVersion = "0.12.24"
-val CirceVersion = "0.13.0"
-val Specs2Version = "4.8.3"
-val LogbackVersion = "1.2.3"
 
 lazy val root = (project in file("."))
   .settings(
@@ -11,22 +6,24 @@ lazy val root = (project in file("."))
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.13.1",
     libraryDependencies ++= Seq(
-      "org.http4s"      %% "http4s-blaze-server" % Http4sVersion,
-      "org.http4s"      %% "http4s-blaze-client" % Http4sVersion,
-      "org.http4s"      %% "http4s-circe"        % Http4sVersion,
-      "org.http4s"      %% "http4s-dsl"          % Http4sVersion,
-      "io.circe"        %% "circe-generic"       % CirceVersion,
+      "org.http4s"      %% "http4s-blaze-server" % Versions.http4s,
+      "org.http4s"      %% "http4s-circe"        % Versions.http4s,
+      "org.http4s"      %% "http4s-dsl"          % Versions.http4s,
+      "io.circe"        %% "circe-generic"       % Versions.circe,
 
-      "com.softwaremill.sttp.tapir" %% "tapir-core"               % TapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % TapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % TapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % TapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % TapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % TapirVersion,
+      "dev.zio"         %% "zio"                 % Versions.zio,
+      "dev.zio"         %% "zio-interop-cats"    % Versions.zioInteropCats,
 
-      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-core"               % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % Versions.tapir,
 
-      "org.specs2"      %% "specs2-core"         % Specs2Version % "test"
+      "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
+
+      "org.specs2"      %% "specs2-core"         % Versions.specs2 % "test"
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.0")
