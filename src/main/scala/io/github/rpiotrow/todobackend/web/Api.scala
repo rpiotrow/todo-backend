@@ -14,36 +14,38 @@ object Api {
   case class PatchTodoInput(title: Option[String], completed: Option[Boolean])
   case class TodoOutput(title: String, url: String, completed: Boolean)  // TODO: use java.net.URL instead of String
 
-  private val baseEndpoint = endpoint.in("todos").errorOut(statusCode)
+  private val baseEndpoint = endpoint.in("todos")
 
-  val getTodos: Endpoint[Unit, StatusCode, List[TodoOutput], Nothing] = baseEndpoint
+  val getTodos: Endpoint[Unit, String, List[TodoOutput], Nothing] = baseEndpoint
     .get
     .out(jsonBody[List[TodoOutput]])
+    .errorOut(stringBody)
 
   val getTodo: Endpoint[Long, StatusCode, TodoOutput, Nothing] = baseEndpoint
     .get
     .in(path[Long]("id"))
     .out(jsonBody[TodoOutput])
+    .errorOut(statusCode)
 
-  val createTodo: Endpoint[CreateTodoInput, StatusCode, String, Nothing] = baseEndpoint
+  val createTodo: Endpoint[CreateTodoInput, Unit, String, Nothing] = baseEndpoint
     .post
     .in(jsonBody[CreateTodoInput])
     .out(header[String]("location")) // TODO: use java.net.URL instead of String
     .out(statusCode(StatusCode.Created))
 
-  val updateTodo: Endpoint[(Long, UpdateTodoInput), StatusCode, TodoOutput, Nothing] = baseEndpoint
+  val updateTodo: Endpoint[(Long, UpdateTodoInput), Unit, TodoOutput, Nothing] = baseEndpoint
     .put
     .in(path[Long]("id"))
     .in(jsonBody[UpdateTodoInput])
     .out(jsonBody[TodoOutput])
 
-  val patchTodo: Endpoint[(Long, PatchTodoInput), StatusCode, TodoOutput, Nothing] = baseEndpoint
+  val patchTodo: Endpoint[(Long, PatchTodoInput), Unit, TodoOutput, Nothing] = baseEndpoint
     .patch
     .in(path[Long]("id"))
     .in(jsonBody[PatchTodoInput])
     .out(jsonBody[TodoOutput])
 
-  val deleteTodo: Endpoint[Long, StatusCode, Unit, Nothing] = baseEndpoint
+  val deleteTodo: Endpoint[Long, Unit, Unit, Nothing] = baseEndpoint
     .delete
     .in(path[Long]("id"))
     .out(statusCode(StatusCode.NoContent))
