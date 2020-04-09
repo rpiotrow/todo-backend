@@ -26,29 +26,30 @@ object Api {
     .out(jsonBody[Option[TodoOutput]])
     .out(statusCode)
 
-
   val createTodo: Endpoint[CreateTodoInput, String, String, Nothing] = baseEndpoint
     .post
     .in(jsonBody[CreateTodoInput])
     .out(header[String]("location")) // TODO: use java.net.URL instead of String
     .out(statusCode(StatusCode.Created))
 
-  val updateTodo: Endpoint[(Long, UpdateTodoInput), String, TodoOutput, Nothing] = baseEndpoint
+  val updateTodo: Endpoint[(Long, UpdateTodoInput), String, (Option[TodoOutput], StatusCode), Nothing] = baseEndpoint
     .put
     .in(path[Long]("id"))
     .in(jsonBody[UpdateTodoInput])
-    .out(jsonBody[TodoOutput])
+    .out(jsonBody[Option[TodoOutput]])
+    .out(statusCode)
 
-  val patchTodo: Endpoint[(Long, PatchTodoInput), String, TodoOutput, Nothing] = baseEndpoint
+  val patchTodo: Endpoint[(Long, PatchTodoInput), String, (Option[TodoOutput], StatusCode), Nothing] = baseEndpoint
     .patch
     .in(path[Long]("id"))
     .in(jsonBody[PatchTodoInput])
-    .out(jsonBody[TodoOutput])
+    .out(jsonBody[Option[TodoOutput]])
+    .out(statusCode)
 
-  val deleteTodo: Endpoint[Long, String, Unit, Nothing] = baseEndpoint
+  val deleteTodo: Endpoint[Long, String, StatusCode, Nothing] = baseEndpoint
     .delete
     .in(path[Long]("id"))
-    .out(statusCode(StatusCode.NoContent))
+    .out(statusCode)
 
   val openAPI: String = List(getTodos, getTodo, createTodo, updateTodo, patchTodo, deleteTodo)
     .toOpenAPI("Todo List", "1.0")

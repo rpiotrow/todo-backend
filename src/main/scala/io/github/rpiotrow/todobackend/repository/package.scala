@@ -13,8 +13,9 @@ package object repository {
       def read(): Task[List[(Long, Todo)]]
       def read(id: Long): Task[Option[Todo]]
       def insert(e: Todo): Task[Long]
-      def update(id: Long, e: Todo): Task[Unit]
-      def delete(id: Long): Task[Unit]
+      def update(id: Long, e: Todo): Task[Option[Unit]]
+      def update(id: Long, maybeTitle: Option[String], maybeCompleted: Option[Boolean]): Task[Option[Todo]]
+      def delete(id: Long): Task[Option[Unit]]
     }
 
     val live: Layer[Nothing, TodoRepo] = ZLayer.fromFunctionM(_ => (for {

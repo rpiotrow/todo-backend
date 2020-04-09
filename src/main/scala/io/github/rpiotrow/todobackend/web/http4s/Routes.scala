@@ -69,15 +69,35 @@ object Routes {
             completed = input.completed
           )
           repo.get
-            .update(id, todo).map(_ => output(todo, id))
-            .mapError(_.getMessage())
+            .update(id, todo).map { option =>
+              option match {
+                case Some(_) => (output(todo, id).some, StatusCode.Ok)
+                case None    => (None, StatusCode.NotFound)
+              }
+          }.mapError(_.getMessage())
+        }
+      }
+      private def patchTodoRoute: HttpRoutes[Task] = {
+        patchTodo.toZioRoutes { tuple =>
+          val (id, input) = tuple
+          repo.get
+            .update(id, input.title, input.completed).map { option =>
+            option match {
+              case Some(todo) => (output(todo, id).some, StatusCode.Ok)
+              case None       => (None, StatusCode.NotFound)
+            }
+          }.mapError(_.getMessage())
         }
       }
       private def deleteTodoRoute: HttpRoutes[Task] = {
         deleteTodo.toZioRoutes { id =>
           repo.get
-            .delete(id)
-            .mapError(_.getMessage())
+            .delete(id).map { option =>
+              option match {
+                case Some(_) => StatusCode.NoContent
+                case None    => StatusCode.NotFound
+              }
+            }.mapError(_.getMessage())
         }
       }
 
@@ -89,7 +109,7 @@ object Routes {
       )
 
       def todoRoutes: HttpRoutes[Task] =
-        createTodoRoute <+> getTodosRoute <+> getTodoRoute <+> updateTodoRoute <+> deleteTodoRoute
+        createTodoRoute <+> getTodosRoute <+> getTodoRoute <+> updateTodoRoute <+> patchTodoRoute <+> deleteTodoRoute
 
       def openApiRoutes(): HttpRoutes[Task] = {
         new SwaggerHttp4s(Api.openAPI).routes[Task]
