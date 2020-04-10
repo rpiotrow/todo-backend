@@ -23,5 +23,6 @@ Go to `http://localhost:8080/docs` to access simple API documentation with Swagg
  * [circe](https://circe.github.io/circe/) for JSON serialization
  * [ZIO](https://zio.dev/) as utility library
  * [tapir](https://tapir.softwaremill.com/) to describe endpoint (API)
+ * [doobie](https://tpolecat.github.io/doobie/) to access SQL database
  * [logback](http://logback.qos.ch/) for logging
  * [spec2](https://etorreborre.github.io/specs2/) as test framework

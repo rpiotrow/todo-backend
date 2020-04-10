@@ -4,6 +4,7 @@ object Versions {
   val zio = "1.0.0-RC18-2"
   val zioInteropCats = "2.0.0.0-RC12"
   val tapir = "0.12.24"
+  val doobie = "0.8.8"
   val specs2 = "4.8.3"
   val logback = "1.2.3"
 }

@@ -32,11 +32,8 @@ object Routes {
       private def getTodosRoute: HttpRoutes[Task] = {
         getTodos.toZioRoutes { _ =>
           repo.get
-            .read().map(_.map { tuple =>
-               val (id, todo) = tuple
-               output(todo, id)
-            })
-            .mapError { _.getMessage() }
+            .read().map(_.map { case (id, todo) => output(todo, id) })
+            .mapError(_.getMessage())
         }
       }
       private def getTodoRoute: HttpRoutes[Task] = {
@@ -57,7 +54,7 @@ object Routes {
             completed = false
           )
           repo.get
-            .insert(todo).map(todoUrl(_))
+            .insert(todo).map(todoUrl)
             .mapError(_.getMessage())
         }
       }
@@ -78,8 +75,7 @@ object Routes {
         }
       }
       private def patchTodoRoute: HttpRoutes[Task] = {
-        patchTodo.toZioRoutes { tuple =>
-          val (id, input) = tuple
+        patchTodo.toZioRoutes { case (id, input) =>
           repo.get
             .update(id, input.title, input.completed).map { option =>
             option match {

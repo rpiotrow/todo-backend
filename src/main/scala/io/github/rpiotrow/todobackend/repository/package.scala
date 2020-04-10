@@ -1,8 +1,12 @@
 package io.github.rpiotrow.todobackend
 
 import io.github.rpiotrow.todobackend.domain.Todo
+import io.github.rpiotrow.todobackend.repository.DoobieTodoRepoService.mkTransactor
 import zio._
+import zio.blocking.Blocking
 import zio.stm._
+
+import scala.concurrent.ExecutionContext
 
 package object repository {
 
@@ -22,6 +26,14 @@ package object repository {
       tMap <- TMap.empty[Long, Todo]
       tIdGenerator <- TRef.make(1L)
     } yield new InMemoryTodoRepoService(tMap, tIdGenerator)).commit)
+
+    def postgreSQL(connectEC: ExecutionContext): ZLayer[Blocking, Throwable, TodoRepo] =
+      ZLayer.fromManaged (
+        for {
+          blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
+          managed <- mkTransactor(connectEC, blockingEC)
+        } yield managed
+      )
   }
 
 }

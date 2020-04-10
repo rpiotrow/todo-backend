@@ -21,6 +21,11 @@ lazy val root = (project in file("."))
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % Versions.tapir,
 
+      "org.tpolecat"    %% "doobie-core"         % Versions.doobie,
+      "org.tpolecat"    %% "doobie-postgres"     % Versions.doobie,
+      "org.tpolecat"    %% "doobie-hikari"       % Versions.doobie,
+      "org.tpolecat"    %% "doobie-quill"        % Versions.doobie,
+
       "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
 
       "org.specs2"      %% "specs2-core"         % Versions.specs2 % "test"

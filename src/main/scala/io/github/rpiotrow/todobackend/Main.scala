@@ -17,7 +17,8 @@ object Main extends CatsApp {
         serverStream <- Server.stream
         server <- serverStream.compile[Task, Task, ExitCode].drain
       } yield server
-    program.provideSomeLayer[ZEnv](TodoRepo.live >>> Routes.live >>> Server.live).foldM(
+    val persistence = TodoRepo.postgreSQL(platform.executor.asEC)
+    program.provideSomeLayer[ZEnv](persistence >>> Routes.live >>> Server.live).foldM(
       err => putStrLn(s"Execution failed with: $err") *> IO.succeed(1),
       _ => IO.succeed(0)
     )

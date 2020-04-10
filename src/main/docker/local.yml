@@ -1,0 +1,16 @@
+version: '3'
+services:
+  postgresql-todobackend:
+    image: postgres:12.2
+    environment:
+      - POSTGRES_USER=todobackend
+      - POSTGRES_PASSWORD=todobackend
+      - POSTGRES_DB=todobackend
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresql-todobackend-data:/var/lib/postgresql/data
+      - ./create-schema.sql:/docker-entrypoint-initdb.d/create-schema.sql
+
+volumes:
+  postgresql-todobackend-data:
