@@ -7,6 +7,7 @@ import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.update.Update0
 import doobie.{Query0, Transactor}
+import io.github.rpiotrow.todobackend.configuration.DatabaseConfiguration
 import io.github.rpiotrow.todobackend.domain.Todo
 import zio._
 import zio.interop.catz._
@@ -72,11 +73,10 @@ object DoobieTodoRepoService {
     title: String,
     completed: Boolean
   )
-  final case class TodoEntityNotFound(id: Long) extends Exception
 
   object SQL {
 
-    def readAll(): Query0[TodoEntity] =
+    def readAll: Query0[TodoEntity] =
       sql"""SELECT * FROM todos""".query[TodoEntity]
 
     def read(id: Long): Query0[TodoEntity] =
@@ -101,14 +101,18 @@ object DoobieTodoRepoService {
       sql"""DELETE FROM todos WHERE id = $id""".update
   }
 
-  def mkTransactor(connectEC: ExecutionContext, transactEC: ExecutionContext): Managed[Throwable, DoobieTodoRepoService] = {
+  def mkTransactor(
+      configuration: DatabaseConfiguration,
+      connectEC: ExecutionContext,
+      transactEC: ExecutionContext
+    ): Managed[Throwable, DoobieTodoRepoService] = {
     import zio.interop.catz._
 
     val xa = HikariTransactor.newHikariTransactor[Task](
-      "org.postgresql.Driver",
-      "jdbc:postgresql:todobackend",
-      "todobackend",
-      "todobackend",
+      configuration.jdbcDriver,
+      configuration.jdbcUrl,
+      configuration.dbUsername,
+      configuration.dbPassword,
       connectEC,
       Blocker.liftExecutionContext(transactEC)
     )

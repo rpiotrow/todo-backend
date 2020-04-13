@@ -14,17 +14,19 @@ lazy val root = (project in file("."))
       "dev.zio"         %% "zio"                 % Versions.zio,
       "dev.zio"         %% "zio-interop-cats"    % Versions.zioInteropCats,
 
+      "org.tpolecat"    %% "doobie-core"         % Versions.doobie,
+      "org.tpolecat"    %% "doobie-postgres"     % Versions.doobie,
+      "org.tpolecat"    %% "doobie-hikari"       % Versions.doobie,
+      "org.tpolecat"    %% "doobie-quill"        % Versions.doobie,
+
+      "com.github.pureconfig"       %% "pureconfig"               % Versions.pureConfig,
+
       "com.softwaremill.sttp.tapir" %% "tapir-core"               % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % Versions.tapir,
-
-      "org.tpolecat"    %% "doobie-core"         % Versions.doobie,
-      "org.tpolecat"    %% "doobie-postgres"     % Versions.doobie,
-      "org.tpolecat"    %% "doobie-hikari"       % Versions.doobie,
-      "org.tpolecat"    %% "doobie-quill"        % Versions.doobie,
 
       "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
 

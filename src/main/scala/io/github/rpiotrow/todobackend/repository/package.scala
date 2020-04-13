@@ -1,7 +1,7 @@
 package io.github.rpiotrow.todobackend
 
+import io.github.rpiotrow.todobackend.configuration.Configuration
 import io.github.rpiotrow.todobackend.domain.Todo
-import io.github.rpiotrow.todobackend.repository.DoobieTodoRepoService.mkTransactor
 import zio._
 import zio.blocking.Blocking
 import zio.stm._
@@ -22,18 +22,20 @@ package object repository {
       def delete(id: Long): Task[Option[Unit]]
     }
 
-    val live: Layer[Nothing, TodoRepo] = ZLayer.fromFunctionM(_ => (for {
+    val live: Layer[Throwable, TodoRepo] = ZLayer.fromFunctionM(_ => (for {
       tMap <- TMap.empty[Long, Todo]
       tIdGenerator <- TRef.make(1L)
     } yield new InMemoryTodoRepoService(tMap, tIdGenerator)).commit)
 
-    def postgreSQL(connectEC: ExecutionContext): ZLayer[Blocking, Throwable, TodoRepo] =
+    def postgreSQL(connectEC: ExecutionContext): ZLayer[Blocking with Configuration, Throwable, TodoRepo] =
       ZLayer.fromManaged (
         for {
           blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
-          managed <- mkTransactor(connectEC, blockingEC)
+          configuration <- configuration.databaseConfiguration.toManaged_
+          managed <- DoobieTodoRepoService.mkTransactor(configuration, connectEC, blockingEC)
         } yield managed
       )
+
   }
 
 }
