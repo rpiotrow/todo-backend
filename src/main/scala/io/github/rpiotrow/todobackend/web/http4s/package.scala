@@ -20,6 +20,8 @@ package object http4s {
       ZLayer.fromServices[TodoRepo.Service, WebConfiguration, Routes.Service] { (repo, configuration) =>
         new Http4sRoutesService(repo, configuration)
       }
+
+    def todoRoutes: RIO[Routes, HttpRoutes[Task]] = ZIO.access(_.get.todoRoutes)
   }
 
   type Server = Has[Server.Service]

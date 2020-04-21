@@ -27,4 +27,4 @@ Go to `http://localhost:8080/docs` to access simple API documentation with Swagg
  * [quill](https://getquill.io/) to write SQL queries in Scala
  * [PureConfig](https://pureconfig.github.io) to parse configuration file into case class
  * [logback](http://logback.qos.ch/) for logging
- * [spec2](https://etorreborre.github.io/specs2/) as test framework
+ * [zio-test](https://zio.dev/docs/usecases/usecases_testing) as test framework

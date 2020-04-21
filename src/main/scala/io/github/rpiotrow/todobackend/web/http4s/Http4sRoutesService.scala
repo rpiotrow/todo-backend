@@ -33,12 +33,10 @@ class Http4sRoutesService(repo: TodoRepo.Service, configuration: WebConfiguratio
   private def getTodoRoute: HttpRoutes[Task] = {
     getTodo.toZioRoutes { id =>
       repo
-        .read(id).map { option =>
-        option match {
+        .read(id).map {
           case Some(todo) => (output(todo, id).some, StatusCode.Ok)
           case None       => (None, StatusCode.NotFound)
-        }
-      }.mapError(_.getMessage())
+        }.mapError(_.getMessage())
     }
   }
   private def createTodoRoute: HttpRoutes[Task] = {
@@ -52,7 +50,7 @@ class Http4sRoutesService(repo: TodoRepo.Service, configuration: WebConfiguratio
         .mapError(_.getMessage())
     }
   }
-  private def updateTodoRoute: HttpRoutes[Task] = {
+  private def updateTodoRoute(): HttpRoutes[Task] = {
     updateTodo.toZioRoutes { tuple =>
       val (id, input) = tuple
       val todo = Todo(
@@ -60,34 +58,28 @@ class Http4sRoutesService(repo: TodoRepo.Service, configuration: WebConfiguratio
         completed = input.completed
       )
       repo
-        .update(id, todo).map { option =>
-        option match {
+        .update(id, todo).map {
           case Some(_) => (output(todo, id).some, StatusCode.Ok)
           case None    => (None, StatusCode.NotFound)
-        }
-      }.mapError(_.getMessage())
+        }.mapError(_.getMessage())
     }
   }
   private def patchTodoRoute: HttpRoutes[Task] = {
     patchTodo.toZioRoutes { case (id, input) =>
       repo
-        .update(id, input.title, input.completed).map { option =>
-        option match {
+        .update(id, input.title, input.completed).map {
           case Some(todo) => (output(todo, id).some, StatusCode.Ok)
           case None       => (None, StatusCode.NotFound)
-        }
-      }.mapError(_.getMessage())
+        }.mapError(_.getMessage())
     }
   }
-  private def deleteTodoRoute: HttpRoutes[Task] = {
+  private def deleteTodoRoute(): HttpRoutes[Task] = {
     deleteTodo.toZioRoutes { id =>
       repo
-        .delete(id).map { option =>
-        option match {
+        .delete(id).map {
           case Some(_) => StatusCode.NoContent
           case None    => StatusCode.NotFound
-        }
-      }.mapError(_.getMessage())
+        }.mapError(_.getMessage())
     }
   }
 
