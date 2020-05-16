@@ -9,6 +9,7 @@ import io.github.rpiotrow.todobackend.repository.TodoRepo
 import io.github.rpiotrow.todobackend.web.Api.{CreateTodoInput, PatchTodoInput, TodoOutput, UpdateTodoInput}
 import org.http4s.circe.CirceEntityCodec._
 import zio._
+import zio.config.syntax._
 import zio.interop.catz._
 import zio.test.Assertion._
 import zio.test.mock.Expectation._
@@ -162,7 +163,8 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
       response <- routes.run(request).value
     } yield response.getOrElse(Response.notFound)
 
-    app.provideLayer(mockEnv ++ Configuration.live >>> Routes.live)
+    val webConfiguration = Configuration.live.narrow(_.webConfiguration)
+    app.provideLayer(mockEnv ++ webConfiguration >>> Routes.live)
   }
 
   private def httpEntity[A](a: A)(implicit ev: Encoder[A]) = {

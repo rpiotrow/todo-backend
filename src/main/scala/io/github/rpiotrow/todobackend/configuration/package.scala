@@ -1,25 +1,17 @@
 package io.github.rpiotrow.todobackend
 
-import pureconfig.{CamelCase, ConfigFieldMapping, ConfigSource}
-import pureconfig.generic.ProductHint
 import zio._
+import zio.config._
+import zio.config.magnolia.DeriveConfigDescriptor.descriptor
+import zio.config.typesafe.TypesafeConfig
 
 package object configuration {
 
-  type Configuration = Has[DatabaseConfiguration] with Has[WebConfiguration]
-
   object Configuration {
-    val live: Layer[Throwable, Configuration] = {
-      import pureconfig.generic.auto._
-      implicit def hint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, CamelCase))
-
-      ZLayer.fromEffectMany(
-        Task
-          .effect(ConfigSource.default.loadOrThrow[AppConfiguration])
-          .map(c => Has(c.databaseConfiguration) ++ Has(c.webConfiguration)))
-    }
+    val appConfigurationDescriptor: ConfigDescriptor[AppConfiguration] =
+      descriptor[AppConfiguration]
+    val live: Layer[Throwable, Config[AppConfiguration]] =
+      TypesafeConfig.fromDefaultLoader(appConfigurationDescriptor)
   }
-
-  val databaseConfiguration: RIO[Has[DatabaseConfiguration], DatabaseConfiguration] = ZIO.access(_.get)
 
 }

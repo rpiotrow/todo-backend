@@ -12,14 +12,15 @@ lazy val root = (project in file("."))
       "io.circe"        %% "circe-generic"       % Versions.circe,
 
       "dev.zio"         %% "zio"                 % Versions.zio,
+      "dev.zio"         %% "zio-config"          % Versions.zioConfig,
+      "dev.zio"         %% "zio-config-magnolia" % Versions.zioConfig,
+      "dev.zio"         %% "zio-config-typesafe" % Versions.zioConfig,
       "dev.zio"         %% "zio-interop-cats"    % Versions.zioInteropCats,
 
       "org.tpolecat"    %% "doobie-core"         % Versions.doobie,
       "org.tpolecat"    %% "doobie-postgres"     % Versions.doobie,
       "org.tpolecat"    %% "doobie-hikari"       % Versions.doobie,
       "org.tpolecat"    %% "doobie-quill"        % Versions.doobie,
-
-      "com.github.pureconfig"       %% "pureconfig"               % Versions.pureConfig,
 
       "com.softwaremill.sttp.tapir" %% "tapir-core"               % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % Versions.tapir,

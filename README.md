@@ -25,6 +25,6 @@ Go to `http://localhost:8080/docs` to access simple API documentation with Swagg
  * [tapir](https://tapir.softwaremill.com/) to describe endpoint (API)
  * [doobie](https://tpolecat.github.io/doobie/) to access SQL database
  * [quill](https://getquill.io/) to write SQL queries in Scala
- * [PureConfig](https://pureconfig.github.io) to parse configuration file into case class
+ * [zio-config](https://zio.github.io/zio-config/) to parse configuration file into case class
  * [logback](http://logback.qos.ch/) for logging
  * [zio-test](https://zio.dev/docs/usecases/usecases_testing) as test framework

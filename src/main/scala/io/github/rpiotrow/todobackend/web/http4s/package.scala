@@ -1,11 +1,12 @@
 package io.github.rpiotrow.todobackend.web
 
 import fs2.Stream
-import io.github.rpiotrow.todobackend.configuration.{Configuration, WebConfiguration}
+import io.github.rpiotrow.todobackend.configuration.WebConfiguration
 import io.github.rpiotrow.todobackend.repository.TodoRepo
 import org.http4s.HttpRoutes
-import zio.clock.Clock
 import zio._
+import zio.clock.Clock
+import zio.config.Config
 
 package object http4s {
 
@@ -16,7 +17,7 @@ package object http4s {
       def openApiRoutes(): HttpRoutes[Task]
     }
 
-    val live: ZLayer[TodoRepo with Configuration, Throwable, Routes] =
+    val live: ZLayer[TodoRepo with Config[WebConfiguration], Throwable, Routes] =
       ZLayer.fromServices[TodoRepo.Service, WebConfiguration, Routes.Service] { (repo, configuration) =>
         new Http4sRoutesService(repo, configuration)
       }
@@ -30,7 +31,7 @@ package object http4s {
       def stream: RIO[Clock, Stream[Task, Nothing]]
     }
 
-    val live: ZLayer[Routes with Configuration, Throwable, Server] =
+    val live: ZLayer[Routes with Config[WebConfiguration], Throwable, Server] =
       ZLayer.fromServices[Routes.Service, WebConfiguration, Server.Service] { (routes, configuration) =>
         new Http4sServerService(routes, configuration)
       }
