@@ -13,14 +13,16 @@ import zio.{RIO, Task, ZIO}
 
 class Http4sServerService(routes: Routes.Service, configuration: WebConfiguration) extends Server.Service {
 
-  override def stream: RIO[Clock, Stream[Task, Nothing]] = ZIO.runtime[Clock].map { implicit runtime =>
+  override def stream: RIO[Clock, Stream[Task, Nothing]] = ZIO.runtime[Clock].flatMap { implicit runtime =>
     val httpApp = (routes.todoRoutes <+> routes.openApiRoutes).orNotFound
     val httpAppWithLogging = Logger.httpApp(true, true)(httpApp)
-    val server = BlazeServerBuilder[Task]
-      .bindHttp(configuration.port, configuration.host)
-      .withHttpApp(httpAppWithLogging)
-      .serve
-    server.drain
+    ZIO.descriptor.map { d =>
+      val server = BlazeServerBuilder[Task](d.executor.asEC)
+        .bindHttp(configuration.port, configuration.host)
+        .withHttpApp(httpAppWithLogging)
+        .serve
+      server.drain
+    }
   }
 
 }

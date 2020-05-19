@@ -130,7 +130,7 @@ object DoobieTodoRepoService {
       Blocker.liftExecutionContext(transactEC)
     )
 
-    Managed(
+    Managed.makeReserve(
       xa.allocated.map {
         case (transactor, cleanupM) =>
           Reservation(ZIO.succeed(transactor), _ => cleanupM.orDie)
