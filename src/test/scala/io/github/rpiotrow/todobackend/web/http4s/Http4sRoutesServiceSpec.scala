@@ -16,23 +16,31 @@ import zio.test.mock.Expectation._
 import zio.test.mock._
 import zio.test.{DefaultRunnableSpec, suite, _}
 
+//compiles in sbt, but not in IntelliJ
+//@mockable[TodoRepo.Service]
+//object TodoRepoMock
+
 object TodoRepoMock extends Mock[TodoRepo] {
-  object ReadAll         extends Effect[Unit, Nothing, List[(Long, Todo)]]
-  object ReadOne         extends Effect[Long, Nothing, Option[Todo]]
-  object Insert          extends Effect[Todo, Nothing, Long]
-  object Update          extends Effect[(Long, Todo), Nothing, Option[Unit]]
-  object UpdatePartially extends Effect[(Long, Option[String], Option[Boolean]), Nothing, Option[Todo]]
-  object Delete          extends Effect[Long, Nothing, Option[Unit]]
+  object Read {
+    object All        extends Effect[Unit, Nothing, List[(Long, Todo)]]
+    object One        extends Effect[Long, Nothing, Option[Todo]]
+  }
+  object Insert       extends Effect[Todo, Nothing, Long]
+  object Update {
+    object Fully      extends Effect[(Long, Todo), Nothing, Option[Unit]]
+    object Partially  extends Effect[(Long, Option[String], Option[Boolean]), Nothing, Option[Todo]]
+  }
+  object Delete       extends Effect[Long, Nothing, Option[Unit]]
 
   val compose: URLayer[Has[Proxy], TodoRepo] =
     ZLayer.fromService { proxy =>
       new TodoRepo.Service {
-        override def read(): Task[List[(Long, Todo)]]              = proxy(ReadAll)
-        override def read(id: Long): Task[Option[Todo]]            = proxy(ReadOne, id)
+        override def read(): Task[List[(Long, Todo)]]              = proxy(Read.All)
+        override def read(id: Long): Task[Option[Todo]]            = proxy(Read.One, id)
         override def insert(e: Todo): Task[Long]                   = proxy(Insert, e)
-        override def update(id: Long, e: Todo): Task[Option[Unit]] = proxy(Update, (id, e))
+        override def update(id: Long, e: Todo): Task[Option[Unit]] = proxy(Update.Fully, (id, e))
         override def update(id: Long, maybeTitle: Option[String], maybeCompleted: Option[Boolean]): Task[Option[Todo]] =
-          proxy(UpdatePartially, id, maybeTitle, maybeCompleted)
+          proxy(Update.Partially, id, maybeTitle, maybeCompleted)
         override def delete(id: Long): Task[Option[Unit]]          = proxy(Delete, id)
       }
     }}
@@ -44,14 +52,14 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
   def spec = suite("Http4sRoutesServiceSpec")(
     testM("read all when empty") {
       val r = makeRequest(
-        ReadAll(value(List())),
+        Read.All(value(List())),
         Request(method = Method.GET, uri = Uri(path = "/todos"))
       )
       check(r, Status.Ok, Some(List[TodoOutput]()))
     },
     testM("read all") {
       val r = makeRequest(
-        ReadAll(value(List((1L, Todo("asd", false)), (2L, Todo("dsa", true))))),
+        Read.All(value(List((1L, Todo("asd", false)), (2L, Todo("dsa", true))))),
         Request(method = Method.GET, uri = Uri(path = "/todos"))
       )
       val expectedBody = List(
@@ -62,14 +70,14 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
     },
     testM("read one when exists") {
       val r = makeRequest(
-        ReadOne(equalTo(1L), value(Some(Todo("asd", false)))),
+        Read.One(equalTo(1L), value(Some(Todo("asd", false)))),
         Request(method = Method.GET, uri = Uri(path = "/todos/1"))
       )
       check(r, Status.Ok, Some(TodoOutput("asd", "http://localhost:8080/todos/1", false)))
     },
     testM("read one when not exists") {
       val r = makeRequest(
-        ReadOne(equalTo(2L), value(None)),
+        Read.One(equalTo(2L), value(None)),
         Request(method = Method.GET, uri = Uri(path = "/todos/2"))
       )
       check[TodoOutput](r, Status.NotFound)
@@ -80,13 +88,13 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
         Insert(equalTo(Todo("newOne", false)), value(3L)),
         Request(method = Method.POST, uri = Uri(path = "/todos"), body = httpEntity(input))
       )
-      // assert Location header
+      // TODO: assert Location header
       check[TodoOutput](r, Status.Created)
     },
     testM("update when exists") {
       val input = UpdateTodoInput("updated", true)
       val r = makeRequest(
-        Update(equalTo((1L, Todo("updated", true))), value(Some(()))),
+        Update.Fully(equalTo((1L, Todo("updated", true))), value(Some(()))),
         Request(method = Method.PUT, uri = Uri(path = "/todos/1"), body = httpEntity(input))
       )
       val expectedBody = TodoOutput("updated", "http://localhost:8080/todos/1", true)
@@ -95,7 +103,7 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
     testM("update when does not exist") {
       val input = UpdateTodoInput("updated", true)
       val r = makeRequest(
-        Update(equalTo((3L, Todo("updated", true))), value(None)),
+        Update.Fully(equalTo((3L, Todo("updated", true))), value(None)),
         Request(method = Method.PUT, uri = Uri(path = "/todos/3"), body = httpEntity(input))
       )
       check[TodoOutput](r, Status.NotFound)
@@ -103,7 +111,7 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
     testM("patch title") {
       val input = PatchTodoInput(Some("updated"), None)
       val r = makeRequest(
-        UpdatePartially(equalTo((1L, Some("updated"), None)), value(Some(Todo("updated", false)))),
+        Update.Partially(equalTo((1L, Some("updated"), None)), value(Some(Todo("updated", false)))),
         Request(method = Method.PATCH, uri = Uri(path = "/todos/1"), body = httpEntity(input))
       )
       val expectedBody = TodoOutput("updated", "http://localhost:8080/todos/1", false)
@@ -112,7 +120,7 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
     testM("patch completed") {
       val input = PatchTodoInput(None, Some(true))
       val r = makeRequest(
-        UpdatePartially(equalTo((1L, None, Some(true))), value(Some(Todo("old", true)))),
+        Update.Partially(equalTo((1L, None, Some(true))), value(Some(Todo("old", true)))),
         Request(method = Method.PATCH, uri = Uri(path = "/todos/1"), body = httpEntity(input))
       )
       val expectedBody = TodoOutput("old", "http://localhost:8080/todos/1", true)
@@ -121,7 +129,7 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
     testM("patch title and completed") {
       val input = PatchTodoInput(Some("updated"), Some(true))
       val r = makeRequest(
-        UpdatePartially(equalTo((1L, Some("updated"), Some(true))), value(Some(Todo("updated", true)))),
+        Update.Partially(equalTo((1L, Some("updated"), Some(true))), value(Some(Todo("updated", true)))),
         Request(method = Method.PATCH, uri = Uri(path = "/todos/1"), body = httpEntity(input))
       )
       val expectedBody = TodoOutput("updated", "http://localhost:8080/todos/1", true)
@@ -130,7 +138,7 @@ object Http4sRoutesServiceSpec extends DefaultRunnableSpec {
     testM("patch when does not exist") {
       val input = PatchTodoInput(Some("updated"), Some(true))
       val r = makeRequest(
-        UpdatePartially(equalTo((3L, Some("updated"), Some(true))), value(None)),
+        Update.Partially(equalTo((3L, Some("updated"), Some(true))), value(None)),
         Request(method = Method.PATCH, uri = Uri(path = "/todos/3"), body = httpEntity(input))
       )
       check[TodoOutput](r, Status.NotFound)

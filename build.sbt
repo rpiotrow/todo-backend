@@ -1,3 +1,4 @@
+import sbt.Keys.testFrameworks
 
 lazy val root = (project in file("."))
   .settings(
@@ -32,12 +33,13 @@ lazy val root = (project in file("."))
       "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
 
       "dev.zio"         %% "zio-test"            % Versions.zio   % "test",
-      "dev.zio"         %% "zio-test-sbt"        % Versions.zio   % "test"
+      "dev.zio"         %% "zio-test-sbt"        % Versions.zio   % "test",
+      "dev.zio"         %% "zio-test-intellij"   % Versions.zio   % "test"
     ),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
-    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.0")
-  )
+    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.0"),
+)
 
 testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
 
@@ -48,4 +50,6 @@ scalacOptions ++= Seq(
   "-language:postfixOps",
   "-feature",
   "-Xfatal-warnings",
+  "-Ymacro-annotations",
+  //"-Ymacro-debug-lite",
 )
