@@ -2,7 +2,6 @@ package io.github.rpiotrow.todobackend.repository
 
 import cats.effect.Blocker
 import cats.implicits._
-import com.zaxxer.hikari.HikariDataSource
 import doobie.Transactor
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
@@ -87,55 +86,23 @@ object DoobieTodoRepoService {
     completed: Boolean
   )
 
-  def createWithZIO(
-    configuration: DatabaseConfiguration,
-    connectEC: ExecutionContext,
-    transactEC: ExecutionContext
-  ): ZManaged[Any, Throwable, DoobieTodoRepoService] = {
-    for {
-      _ <- ZIO.effect(Class.forName(configuration.jdbcDriver)).toManaged_
-      t <- initialTransactor(connectEC, Blocker.liftExecutionContext(transactEC))
-      _ <- configureTransactor(t, configuration).toManaged_
-    } yield new DoobieTodoRepoService(t)
-  }
-
-  private def initialTransactor(connectEC: ExecutionContext, blocker: Blocker): ZManaged[Any, Throwable, HikariTransactor[Task]] = {
-    Managed.make(ZIO.effect(new HikariDataSource))(ds => ZIO.effect(ds.close()).orDie)
-      .map(Transactor.fromDataSource[Task](_, connectEC, blocker))
-  }
-
-  private def configureTransactor(t: HikariTransactor[Task], configuration: DatabaseConfiguration): Task[Unit] = {
-    t.configure { ds =>
-      Task.succeed {
-        ds setJdbcUrl configuration.jdbcUrl
-        ds setUsername configuration.dbUsername
-        ds setPassword configuration.dbPassword
-      }
-    }
-  }
-
-  def createWithCats(
+  def create(
       configuration: DatabaseConfiguration,
       connectEC: ExecutionContext,
       transactEC: ExecutionContext
     ): Managed[Throwable, DoobieTodoRepoService] = {
-    import zio.interop.catz._
 
-    val xa = HikariTransactor.newHikariTransactor[Task](
-      configuration.jdbcDriver,
-      configuration.jdbcUrl,
-      configuration.dbUsername,
-      configuration.dbPassword,
-      connectEC,
-      Blocker.liftExecutionContext(transactEC)
-    )
-
-    Managed.makeReserve(
-      xa.allocated.map {
-        case (transactor, cleanupM) =>
-          Reservation(ZIO.succeed(transactor), _ => cleanupM.orDie)
-      }.uninterruptible
-    ).map(new DoobieTodoRepoService(_))
+    HikariTransactor
+      .newHikariTransactor[Task](
+        configuration.jdbcDriver,
+        configuration.jdbcUrl,
+        configuration.dbUsername,
+        configuration.dbPassword,
+        connectEC,
+        Blocker.liftExecutionContext(transactEC)
+      )
+      .toManagedZIO
+      .map(new DoobieTodoRepoService(_))
   }
 
 }

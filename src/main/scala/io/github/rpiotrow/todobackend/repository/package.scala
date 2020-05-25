@@ -34,7 +34,7 @@ package object repository {
         for {
           blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }.toManaged_
           configuration <- zio.config.config[DatabaseConfiguration].toManaged_
-          managed <- DoobieTodoRepoService.createWithZIO(configuration, connectEC, blockingEC)
+          managed <- DoobieTodoRepoService.create(configuration, connectEC, blockingEC)
         } yield managed
       )
 
