@@ -23,12 +23,16 @@ lazy val root = (project in file("."))
       "org.tpolecat"    %% "doobie-hikari"       % Versions.doobie,
       "org.tpolecat"    %% "doobie-quill"        % Versions.doobie,
 
-      "com.softwaremill.sttp.tapir" %% "tapir-core"               % Versions.tapir,
-      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % Versions.tapir,
-      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % Versions.tapir,
-      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % Versions.tapir,
-      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % Versions.tapir,
-      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"  % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-core"                 % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"           % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"         % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml"   % Versions.tapir,
+
+      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"        % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s"    % Versions.tapir,
+
+      "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server"     % Versions.tapir,
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-akka-http" % Versions.tapir,
 
       "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
 

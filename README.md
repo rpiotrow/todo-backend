@@ -4,13 +4,21 @@ Backend for TODO list. Goal of this application is testing technology stack.
 
 ## Requirements
 
- * Java SDK: https://jdk.java.net/13/
+ * Java SDK: https://jdk.java.net/
  * sbt: https://www.scala-sbt.org/download.html
 
 ## Run
 
+### Http4s
+
 ```
-sbt run
+sbt "runMain io.github.rpiotrow.todobackend.MainHttp4s"
+```
+
+### Akka HTTP
+
+```
+sbt "runMain io.github.rpiotrow.todobackend.MainAkkaHttp"
 ```
 
 ## API
@@ -19,7 +27,8 @@ Go to `http://localhost:8080/docs` to access simple API documentation with Swagg
 
 ## Libraries
 
- * [http4s](https://http4s.org/) as http server and client
+ * [http4s](https://http4s.org/) as http server
+ * [akka-http](https://doc.akka.io/docs/akka-http/current/index.html) as alternative http server
  * [circe](https://circe.github.io/circe/) for JSON serialization
  * [ZIO](https://zio.dev/) as utility library
  * [tapir](https://tapir.softwaremill.com/) to describe endpoint (API)

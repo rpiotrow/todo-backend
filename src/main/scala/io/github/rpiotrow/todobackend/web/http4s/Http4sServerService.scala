@@ -11,7 +11,10 @@ import zio.interop.catz._
 import zio.interop.catz.implicits._
 import zio.{RIO, Task, ZIO}
 
-class Http4sServerService(routes: Routes.Service, configuration: WebConfiguration) extends Server.Service {
+class Http4sServerService(
+  routes: Routes.Service,
+  configuration: WebConfiguration
+) extends Server.Service {
 
   override def stream: RIO[Clock, Stream[Task, Nothing]] = ZIO.runtime[Clock].flatMap { implicit runtime =>
     val httpApp = (routes.todoRoutes <+> routes.openApiRoutes).orNotFound
