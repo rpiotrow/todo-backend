@@ -1,11 +1,10 @@
 package io.github.rpiotrow.todobackend.web
 
-import cats.implicits._
 import cats._
 import io.github.rpiotrow.todobackend.configuration.WebConfiguration
 import io.github.rpiotrow.todobackend.domain.Todo
-import io.github.rpiotrow.todobackend.repository.TodoRepo
-import io.github.rpiotrow.todobackend.web.Api.TodoOutput
+import io.github.rpiotrow.todobackend.repository._
+import io.github.rpiotrow.todobackend.web.Api._
 import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.server.ServerEndpoint
@@ -26,11 +25,8 @@ class ApiImplementationService[F[_]](
 
   override val getTodo =
     addLogic(Api.getTodo) { id =>
-      repo
-        .read(id).map {
-        case Some(todo) => (output(todo, id).some, StatusCode.Ok)
-        case None       => (None, StatusCode.NotFound)
-      }
+      repo.read(id)
+        .map(todo => output(todo, id))
     }
 
   override val createTodo =
@@ -49,34 +45,29 @@ class ApiImplementationService[F[_]](
         title = input.title,
         completed = input.completed
       )
-      repo
-        .update(id, todo).map {
-        case Some(_) => (output(todo, id).some, StatusCode.Ok)
-        case None    => (None, StatusCode.NotFound)
-      }
+      repo.update(id, todo).as(output(todo, id))
     }
 
   override val patchTodo =
     addLogic(Api.patchTodo) { case (id, input) =>
-      repo
-        .update(id, input.title, input.completed).map {
-        case Some(todo) => (output(todo, id).some, StatusCode.Ok)
-        case None       => (None, StatusCode.NotFound)
-      }
+      repo.update(id, input.title, input.completed)
+        .map(todo => output(todo, id))
     }
 
   override val deleteTodo =
     addLogic(Api.deleteTodo) { id =>
-      repo
-        .delete(id).map {
-        case Some(_) => StatusCode.NoContent
-        case None    => StatusCode.NotFound
-      }
+      repo.delete(id).as(StatusCode.NoContent)
     }
 
-  private def addLogic[I, O](e: Endpoint[I, String, O, Nothing])(logic: I => Task[O]): ServerEndpoint[I, String, O, Nothing, F] = {
+  private def addLogic[I, O](e: Endpoint[I, ApiError, O, Nothing])(logic: I => IO[TodoRepoFailure, O]): ServerEndpoint[I, ApiError, O, Nothing, F] = {
     e.serverLogic[F](input => {
-      val task = logic(input).mapError(_.getMessage()).either
+      val task =
+        logic(input)
+          .catchAll {
+            case TodoNotFound => ZIO.fail(NotFound)
+            case TodoRepoError(_) => ZIO.fail(ServerError("server.error")) // log exception (?)
+          }
+          .either
       transformation(task)
     })
   }

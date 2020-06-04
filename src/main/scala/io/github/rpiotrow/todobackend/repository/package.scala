@@ -14,14 +14,18 @@ package object repository {
   type TodoRepo = Has[TodoRepo.Service]
   type TodoRepoEnv = Blocking with Config[DatabaseConfiguration]
 
+  sealed trait TodoRepoFailure
+  case object TodoNotFound extends TodoRepoFailure
+  case class TodoRepoError(ex: Throwable) extends TodoRepoFailure
+
   object TodoRepo {
     trait Service {
-      def read(): Task[List[(Long, Todo)]]
-      def read(id: Long): Task[Option[Todo]]
-      def insert(e: Todo): Task[Long]
-      def update(id: Long, e: Todo): Task[Option[Unit]]
-      def update(id: Long, maybeTitle: Option[String], maybeCompleted: Option[Boolean]): Task[Option[Todo]]
-      def delete(id: Long): Task[Option[Unit]]
+      def read(): IO[TodoRepoError, List[(Long, Todo)]]
+      def read(id: Long): IO[TodoRepoFailure, Todo]
+      def insert(e: Todo): IO[TodoRepoError, Long]
+      def update(id: Long, e: Todo): IO[TodoRepoFailure, Unit]
+      def update(id: Long, maybeTitle: Option[String], maybeCompleted: Option[Boolean]): IO[TodoRepoFailure, Todo]
+      def delete(id: Long): IO[TodoRepoFailure, Unit]
     }
 
     val live: Layer[Throwable, TodoRepo] = ZLayer.fromFunctionM(_ => (for {

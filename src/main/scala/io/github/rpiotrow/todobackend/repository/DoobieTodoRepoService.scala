@@ -23,52 +23,56 @@ class DoobieTodoRepoService(tnx: Transactor[Task]) extends TodoRepo.Service {
   private val todos = quote { querySchema[TodoEntity]("todos") }
   private def todoById(id: Long) = quote { todos.filter(_.id == lift(id)) }
 
-  override def read(): Task[List[(Long, Todo)]] = {
+  override def read() = {
     stream(todos)
       .compile.toList
       .transact(tnx)
-      .map(list => list.map(e => (e.id, toTodo(e))))
+      .bimap(TodoRepoError, _.map(e => (e.id, toTodo(e))))
   }
 
-  override def read(id: Long): Task[Option[Todo]] = {
+  override def read(id: Long): IO[TodoRepoFailure, Todo] = fromOption(
     readEntity(id)
       .map(_.map(toTodo))
       .transact(tnx)
-  }
+      .mapError(TodoRepoError)
+  )
 
-  override def insert(todo: Todo): Task[Long] = {
+  override def insert(todo: Todo) = {
     run(quote { todos.insert(lift(toEntity(0, todo))).returningGenerated(_.id) })
       .transact(tnx)
+      .mapError(TodoRepoError)
   }
 
-  override def update(id: Long, todo: Todo): Task[Option[Unit]] = {
+  override def update(id: Long, todo: Todo) =
     updateEntity(id, toEntity(id, todo))
       .transact(tnx)
-      .map(oneToSomeUnit)
-  }
+      .mapError(TodoRepoError)
+      .flatMap(unitOrNotFound)
 
-  override def update(id: Long, maybeTitle: Option[String], maybeCompleted: Option[Boolean]): Task[Option[Todo]] = {
+  override def update(id: Long, maybeTitle: Option[String], maybeCompleted: Option[Boolean]) = fromOption {
     val updateFields = updateTitle(maybeTitle) andThen updateCompleted(maybeCompleted)
     (for {
       read    <- readEntity(id)
-      updated  = read.map(updateFields(_))
+      updated =  read.map(updateFields(_))
       _       <- updated.map(updateEntity(id, _)).sequence
     } yield updated.map(toTodo))
       .transact(tnx)
+      .mapError(TodoRepoError)
   }
 
-  override def delete(id: Long): Task[Option[Unit]] = {
+  override def delete(id: Long) =
     run(quote { todoById(id).delete })
       .transact(tnx)
-      .map(oneToSomeUnit)
-  }
+      .mapError(TodoRepoError)
+      .flatMap(unitOrNotFound)
 
   private def readEntity(id: Long) =
     run(quote { todoById(id) }).map(_.headOption)
   private def updateEntity(id: Long, e: TodoEntity) =
     run(quote { todoById(id).update(lift(e)) })
 
-  private def oneToSomeUnit(r: Long) = if (r == 1) ().some else None
+  private def unitOrNotFound(r: Long) =
+    if (r == 1) ZIO.succeed(()) else ZIO.fail(TodoNotFound)
   private def toTodo(entity: TodoEntity) = Todo(entity.title, entity.completed)
   private def toEntity(id: Long, todo: Todo) = TodoEntity(id, todo.title, todo.completed)
 
@@ -76,6 +80,9 @@ class DoobieTodoRepoService(tnx: Transactor[Task]) extends TodoRepo.Service {
     maybeTitle.fold(e)(title => e.copy(title = title))
   private def updateCompleted(maybeCompleted: Option[Boolean]) = (e: TodoEntity) =>
     maybeCompleted.fold(e)(completed => e.copy(completed = completed))
+
+  private def fromOption[A](option: IO[TodoRepoError, Option[A]]): IO[TodoRepoFailure, A] =
+    option.flatMap(ZIO.fromOption(_).orElseFail(TodoNotFound))
 }
 
 object DoobieTodoRepoService {
