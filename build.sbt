@@ -36,9 +36,9 @@ lazy val root = (project in file("."))
 
       "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
 
-      "dev.zio"         %% "zio-test"            % Versions.zio   % "test",
-      "dev.zio"         %% "zio-test-sbt"        % Versions.zio   % "test",
-      "dev.zio"         %% "zio-test-intellij"   % Versions.zio   % "test"
+      "dev.zio"         %% "zio-test"            % Versions.zio             % "test",
+      "dev.zio"         %% "zio-test-sbt"        % Versions.zio             % "test",
+      "dev.zio"         %% "zio-test-intellij"   % Versions.zioTestIntellij % "test"
     ),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
