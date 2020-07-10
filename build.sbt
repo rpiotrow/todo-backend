@@ -34,11 +34,16 @@ lazy val root = (project in file("."))
       "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server"     % Versions.tapir,
       "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-akka-http" % Versions.tapir,
 
-      "ch.qos.logback"  %  "logback-classic"     % Versions.logback,
+      "ch.qos.logback"  %  "logback-classic"       % Versions.logback,
 
-      "dev.zio"         %% "zio-test"            % Versions.zio             % "test",
-      "dev.zio"         %% "zio-test-sbt"        % Versions.zio             % "test",
-      "dev.zio"         %% "zio-test-intellij"   % Versions.zioTestIntellij % "test"
+      "dev.zio"         %% "zio-test"              % Versions.zio               % Test,
+      "dev.zio"         %% "zio-test-sbt"          % Versions.zio               % Test,
+      "dev.zio"         %% "zio-test-intellij"     % Versions.zioTestIntellij   % Test,
+
+      "org.specs2"        %% "specs2-core"         % Versions.specs2            % Test,
+      "org.specs2"        %% "specs2-mock"         % Versions.specs2            % Test,
+      "com.typesafe.akka" %% "akka-http-testkit"   % Versions.akkaHttpTestkit   % Test,
+      "com.typesafe.akka" %% "akka-stream-testkit" % Versions.akkaStreamTestkit % Test
     ),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),

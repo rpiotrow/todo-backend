@@ -15,9 +15,8 @@ class Http4sRoutesService(
   configuration: WebConfiguration
 ) extends Routes.Service {
 
-  private val apiImplementation = new ApiImplementationService(repo, configuration, FunctionK.id)
-
-  override def todoRoutes(): HttpRoutes[Task] =
+  override def todoRoutes(): HttpRoutes[Task] = {
+    val apiImplementation = new ApiImplementationService(repo, configuration, FunctionK.id)
     List(
       apiImplementation.getTodo,
       apiImplementation.getTodos,
@@ -26,6 +25,7 @@ class Http4sRoutesService(
       apiImplementation.patchTodo,
       apiImplementation.deleteTodo
     ).toRoutes
+  }
 
   override def openApiRoutes(): HttpRoutes[Task] = {
     new SwaggerHttp4s(Api.openAPI).routes[Task]

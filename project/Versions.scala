@@ -8,5 +8,7 @@ object Versions {
   val doobie = "0.8.8"
   val specs2 = "4.8.3"
   val zioTestIntellij = "1.0.0-RC20"
+  val akkaHttpTestkit = "10.1.12"
+  val akkaStreamTestkit = "2.6.6"
   val logback = "1.2.3"
 }

@@ -16,9 +16,6 @@ class AkkaHttpRoutesService(
   configuration: WebConfiguration
 ) extends Routes.Service {
 
-  def toFuture(implicit ec: ExecutionContext) =
-    λ[FunctionK[Task, Future]](task => Future(zio.Runtime.default.unsafeRunTask(task)))
-
   override def todoRoutes(implicit ec: ExecutionContext): Route = {
     val apiImplementation = new ApiImplementationService(repo, configuration, toFuture)
     List(
@@ -32,5 +29,8 @@ class AkkaHttpRoutesService(
   }
 
   override def openApiRoutes(): Route = new SwaggerAkka(Api.openAPI).routes
+
+  private def toFuture(implicit ec: ExecutionContext) =
+    λ[FunctionK[Task, Future]](task => Future(zio.Runtime.default.unsafeRunTask(task)))
 
 }
