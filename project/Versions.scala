@@ -10,5 +10,7 @@ object Versions {
   val zioTestIntellij = "1.0.0-RC20"
   val akkaHttpTestkit = "10.1.12"
   val akkaStreamTestkit = "2.6.6"
+  val scalatest = "3.2.0"
+  val testContainers = "0.38.0"
   val logback = "1.2.3"
 }

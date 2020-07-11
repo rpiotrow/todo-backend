@@ -1,7 +1,9 @@
 import sbt.Keys.testFrameworks
 
 lazy val root = (project in file("."))
+  .configs(IntegrationTest)
   .settings(
+    Defaults.itSettings,
     organization := "io.github.rpiotrow",
     name := "todo-backend",
     version := "0.0.1-SNAPSHOT",
@@ -43,7 +45,12 @@ lazy val root = (project in file("."))
       "org.specs2"        %% "specs2-core"         % Versions.specs2            % Test,
       "org.specs2"        %% "specs2-mock"         % Versions.specs2            % Test,
       "com.typesafe.akka" %% "akka-http-testkit"   % Versions.akkaHttpTestkit   % Test,
-      "com.typesafe.akka" %% "akka-stream-testkit" % Versions.akkaStreamTestkit % Test
+      "com.typesafe.akka" %% "akka-stream-testkit" % Versions.akkaStreamTestkit % Test,
+
+      "com.dimafeng"      %% "testcontainers-scala-scalatest"  % Versions.testContainers % IntegrationTest,
+      "com.dimafeng"      %% "testcontainers-scala-postgresql" % Versions.testContainers % IntegrationTest,
+      "org.scalactic"     %% "scalactic"                       % Versions.scalatest      % IntegrationTest,
+      "org.scalatest"     %% "scalatest"                       % Versions.scalatest      % IntegrationTest
     ),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
@@ -62,3 +69,5 @@ scalacOptions ++= Seq(
   "-Ymacro-annotations",
   //"-Ymacro-debug-lite",
 )
+
+addCommandAlias("checks", ";test;it:test")
